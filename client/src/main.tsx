@@ -3,6 +3,7 @@ import '@fontsource-variable/cormorant-garamond/wght-italic.css';
 import '@fontsource-variable/caveat';
 import './index.css';
 import './styles/book.css';
+import './styles/cover.css';
 import './styles/print.css';
 
 import { StrictMode } from 'react';

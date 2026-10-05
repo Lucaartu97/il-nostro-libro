@@ -95,7 +95,7 @@ mediaRouter.get('/media/:id/file', async (req, res) => {
 mediaRouter.delete('/media/:id', async (req, res) => {
   const { id } = idParam.parse(req.params);
   const rows = await query<{ file_name: string | null }>(
-    'DELETE FROM media WHERE id = $1 AND book_id = $2 AND entry_id IS NULL RETURNING file_name',
+    'DELETE FROM media WHERE id = $1 AND book_id = $2 AND entry_id IS NULL AND NOT on_cover RETURNING file_name',
     [id, req.bookId],
   );
   await removeFiles(
@@ -109,7 +109,7 @@ mediaRouter.delete('/media/:id', async (req, res) => {
 export async function cleanOrphanMedia(): Promise<number> {
   const rows = await query<{ book_id: string; file_name: string | null }>(
     `DELETE FROM media
-      WHERE entry_id IS NULL AND created_at < now() - interval '24 hours'
+      WHERE entry_id IS NULL AND NOT on_cover AND created_at < now() - interval '24 hours'
       RETURNING book_id, file_name`,
   );
   await Promise.all(rows.map((r) => removeFiles(r.book_id, [r.file_name])));

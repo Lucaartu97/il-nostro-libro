@@ -1,10 +1,12 @@
 import { ArrowLeft, Printer } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { CoverCanvas } from '../components/cover/CoverCanvas';
 import { Divider, HeartDoodle } from '../components/Decor';
 import { mediaLabel } from '../components/MediaThumb';
 import { TagBadge } from '../components/TagBadge';
 import { useLive } from '../context/Live';
 import { useOpenBook } from '../context/Session';
+import { defaultCover } from '../lib/cover';
 import { formatDate, formatFullDate, togetherLabel } from '../lib/format';
 import type { Media } from '../lib/types';
 import { Loading } from './BookView';
@@ -32,6 +34,7 @@ export function PrintView() {
   const { book } = useOpenBook();
   const { entries } = useLive();
   if (!entries) return <Loading text="Raccogliamo le pagine…" />;
+  const cover = book.cover ?? defaultCover();
 
   return (
     <div className="mx-auto w-[min(44rem,calc(100%-1.5rem))] py-5">
@@ -50,6 +53,12 @@ export function PrintView() {
         Nella finestra di stampa scegli «Salva come PDF» per avere il libro in un unico file. Video e canzoni restano nel
         libro online: sulla carta ne resta il titolo.
       </p>
+
+      <div className="print-break mx-auto mb-5 w-full max-w-[24rem]">
+        <div className={`cover-fit cover-frame cover-bg-${cover.background}`}>
+          <CoverCanvas cover={cover} book={book} />
+        </div>
+      </div>
 
       <section className="card print-sheet print-break flex flex-col items-center gap-4 px-8 py-16 text-center">
         <HeartDoodle className="w-12 text-accent" />

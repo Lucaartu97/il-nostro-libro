@@ -1,6 +1,5 @@
 /* Il libro: due pagine affiancate (o una sola su telefono) e il foglio che gira in 3D. */
 .book-stage {
-  perspective: 2400px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -11,7 +10,8 @@
   width: 100%;
   height: min(calc(100dvh - 205px), 760px);
   min-height: 420px;
-  transform-style: preserve-3d;
+  /* La prospettiva sta qui (e non più su): il filtro dell'ombra appiattirebbe il 3D ereditato. */
+  perspective: 2400px;
 }
 .book.is-wide {
   width: min(1120px, 100%);
@@ -193,4 +193,12 @@
 @keyframes typing {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* La copertina è rigida: niente bordo di carta, angoli da libro rilegato. */
+.book-page.is-cover { box-shadow: none; }
+.book-page.is-cover.is-right, .book-page.is-cover.is-single { border-radius: 6px 16px 16px 6px; }
+.book-page.is-cover::before { display: none; }
+.book-page.is-cover::after {
+  background: linear-gradient(to right, rgb(20 5 10 / 0.38), rgb(255 255 255 / 0.12) 3.5%, rgb(20 5 10 / 0.12) 6%, transparent 9%);
 }

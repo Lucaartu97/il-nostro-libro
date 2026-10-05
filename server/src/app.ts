@@ -7,6 +7,7 @@ import { config } from './config.js';
 import { pool } from './db/pool.js';
 import { errorHandler, HttpError } from './lib/errors.js';
 import { booksRouter } from './routes/books.js';
+import { coverRouter } from './routes/cover.js';
 import { entriesRouter } from './routes/entries.js';
 import { exportRouter } from './routes/export.js';
 import { mediaRouter } from './routes/media.js';
@@ -46,7 +47,7 @@ export function createApp() {
     res.json({ ok: true });
   });
 
-  app.use('/api', booksRouter, entriesRouter, mediaRouter, exportRouter);
+  app.use('/api', booksRouter, coverRouter, entriesRouter, mediaRouter, exportRouter);
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'Indirizzo non trovato.')));
 
   // In produzione Express serve anche il frontend già compilato.

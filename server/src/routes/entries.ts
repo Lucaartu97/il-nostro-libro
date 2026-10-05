@@ -82,7 +82,7 @@ entriesRouter.post('/entries', async (req, res) => {
     for (const [position, item] of data.media.entries()) {
       await client.query(
         `UPDATE media SET entry_id = $1, position = $2, caption = $3
-          WHERE id = $4 AND book_id = $5 AND entry_id IS NULL`,
+          WHERE id = $4 AND book_id = $5 AND entry_id IS NULL AND NOT on_cover`,
         [id, position, item.caption, item.id, req.bookId],
       );
     }
@@ -119,7 +119,7 @@ entriesRouter.put('/entries/:id', async (req, res) => {
     for (const [position, item] of data.media.entries()) {
       await client.query(
         `UPDATE media SET entry_id = $1, position = $2, caption = $3
-          WHERE id = $4 AND book_id = $5 AND (entry_id IS NULL OR entry_id = $1)`,
+          WHERE id = $4 AND book_id = $5 AND NOT on_cover AND (entry_id IS NULL OR entry_id = $1)`,
         [id, position, item.caption, item.id, req.bookId],
       );
     }

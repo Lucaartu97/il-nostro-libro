@@ -11,6 +11,8 @@ export interface Book {
   startDate: string;
   theme: Theme;
   createdAt: string;
+  /** null finché la copertina non viene personalizzata. */
+  cover: Cover | null;
 }
 
 export interface Media {
@@ -52,4 +54,33 @@ export interface EntryInput {
 export interface Person {
   author: string;
   clientId: string;
+}
+
+// ---- Copertina ----
+
+export type CoverBackground = 'tema' | 'carta' | 'kraft' | 'notte' | 'cipria';
+export type NoteColor = 'giallo' | 'rosa' | 'azzurro' | 'verde';
+export type TextColor = 'inchiostro' | 'chiaro' | 'accento' | 'oro';
+
+/** Centro (x, y) e larghezza (w) in percentuale della copertina; rot in gradi; z = ordine di sovrapposizione. */
+interface Placed {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  rot: number;
+  z: number;
+}
+
+export type CoverItem =
+  | (Placed & { type: 'title' })
+  | (Placed & { type: 'photo'; mediaId: string; frame: 'polaroid' | 'nessuna' })
+  | (Placed & { type: 'video'; mediaId: string })
+  | (Placed & { type: 'note'; text: string; color: NoteColor })
+  | (Placed & { type: 'text'; text: string; font: 'mano' | 'stampa'; color: TextColor })
+  | (Placed & { type: 'sticker'; sticker: string });
+
+export interface Cover {
+  background: CoverBackground;
+  items: CoverItem[];
 }

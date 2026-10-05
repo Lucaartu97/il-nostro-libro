@@ -43,7 +43,7 @@ export function IndexPage({ items, first, number, onJump }: IndexPageProps) {
                   </span>
                 </span>
                 <span className="mb-1 flex-none self-end border-b border-dotted border-ink-soft/50 px-3" aria-hidden />
-                <span className="flex-none tabular-nums text-ink-soft">{page + 1}</span>
+                <span className="flex-none tabular-nums text-ink-soft">{page}</span>
               </button>
             </li>
           ))}

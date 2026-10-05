@@ -10,6 +10,7 @@ import { WhoAreYou } from './pages/WhoAreYou';
 const CreateBook = lazy(() => import('./pages/CreateBook').then((m) => ({ default: m.CreateBook })));
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })));
 const Editor = lazy(() => import('./pages/Editor').then((m) => ({ default: m.Editor })));
+const CoverEditor = lazy(() => import('./pages/CoverEditor').then((m) => ({ default: m.CoverEditor })));
 const Memories = lazy(() => import('./pages/Memories').then((m) => ({ default: m.Memories })));
 const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })));
 const PrintView = lazy(() => import('./pages/PrintView').then((m) => ({ default: m.PrintView })));
@@ -55,6 +56,7 @@ export function App() {
             <Route path="/libro" element={<BookView />} />
             <Route path="/scrivi" element={<EditorRoute />} />
             <Route path="/scrivi/:id" element={<EditorRoute />} />
+            <Route path="/copertina" element={<CoverEditor />} />
             <Route path="/ricordi" element={<Memories />} />
             <Route path="/impostazioni" element={<Settings />} />
             <Route path="/stampa" element={<PrintView />} />

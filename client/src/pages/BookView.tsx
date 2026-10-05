@@ -4,7 +4,8 @@ import { Book } from '../components/book/Book';
 import { EntryPage } from '../components/book/EntryPage';
 import { IndexPage } from '../components/book/IndexPage';
 import { buildPages, pageOfEntry } from '../components/book/model';
-import { CoverPage, NextPage } from '../components/book/pages';
+import { NextPage, TitlePage } from '../components/book/pages';
+import { CoverPage } from '../components/cover/CoverPage';
 import { HeartDoodle } from '../components/Decor';
 import { TopBar } from '../components/TopBar';
 import { useLive } from '../context/Live';
@@ -33,7 +34,7 @@ export function BookView() {
   useEffect(() => {
     if (!entries) return;
     if (wanted) {
-      const index = pageOfEntry(pages, wanted);
+      const index = wanted === 'copertina' ? 0 : pageOfEntry(pages, wanted);
       setPage((current) => (index >= 0 ? index : (current ?? 0)));
       setParams({}, { replace: true });
     } else if (page === null) {
@@ -67,19 +68,21 @@ export function BookView() {
       switch (spec.kind) {
         case 'cover':
           return <CoverPage book={book} />;
+        case 'title':
+          return <TitlePage book={book} />;
         case 'index':
-          return <IndexPage items={spec.items} first={spec.first} number={index + 1} onJump={setPage} />;
+          return <IndexPage items={spec.items} first={spec.first} number={index} onJump={setPage} />;
         case 'entry':
           return (
             <EntryPage
               entry={spec.entry}
-              number={index + 1}
+              number={index}
               partnerEditing={partnerWriting?.entryId === spec.entry.id ? partner : null}
               onToggleFavorite={toggleFavorite}
             />
           );
         case 'next':
-          return <NextPage number={index + 1} partnerWriting={partnerWriting?.entryId === null ? partner : null} />;
+          return <NextPage number={index} partnerWriting={partnerWriting?.entryId === null ? partner : null} />;
         case 'blank':
           return null;
       }

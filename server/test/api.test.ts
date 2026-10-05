@@ -58,8 +58,8 @@ describe('pagine del libro', () => {
     const id = created.body.entry.id;
     expect(created.body.entry.contentHtml).toBe('<p>Ciao <strong>amore</strong>link</p>');
 
-    const updated = await agent.put(`/api/entries/${id}`).send(entryData({ title: 'La nostra sera', author: 'Marco' }));
-    expect(updated.body.entry).toMatchObject({ title: 'La nostra sera', author: 'Marco', date: '2024-02-14' });
+    const updated = await agent.put(`/api/entries/${id}`).send(entryData({ title: 'La nostra sera 🌙', author: 'Marco' }));
+    expect(updated.body.entry).toMatchObject({ title: 'La nostra sera 🌙', author: 'Marco', date: '2024-02-14' });
 
     const fav = await agent.patch(`/api/entries/${id}/favorite`).send({ isFavorite: true });
     expect(fav.body.entry.isFavorite).toBe(true);

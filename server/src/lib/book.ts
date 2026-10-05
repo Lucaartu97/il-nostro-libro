@@ -12,9 +12,10 @@ export type BookRow = {
   start_date: string;
   theme: string;
   created_at: Date;
+  cover: unknown;
 };
 
-export const BOOK_COLUMNS = 'id, couple_name, partner_one, partner_two, start_date, theme, created_at';
+export const BOOK_COLUMNS = 'id, couple_name, partner_one, partner_two, start_date, theme, created_at, cover';
 
 export function toBook(row: BookRow) {
   return {
@@ -25,6 +26,8 @@ export function toBook(row: BookRow) {
     startDate: row.start_date,
     theme: row.theme,
     createdAt: row.created_at,
+    // Composizione della copertina; null finché la coppia non la personalizza.
+    cover: row.cover ?? null,
   };
 }
 

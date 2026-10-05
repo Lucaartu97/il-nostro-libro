@@ -1,0 +1,158 @@
+/* La copertina: una tela 3:4 su cui si appoggiano foto, post-it, messaggi e sticker. */
+
+/* Riempie la pagina del libro (o la cornice dell'editor) e colora anche i margini attorno alla tela. */
+.cover-fit {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  container-type: size;
+  --cover-ink: #4b2e35;
+  --cover-stitch: rgb(75 46 53 / 0.28);
+  /* In stampa (PDF) lo sfondo della copertina va tenuto. */
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.cover-frame {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 6px 16px 16px 6px;
+  box-shadow: var(--shadow), inset 6px 0 10px -4px rgb(0 0 0 / 0.25);
+}
+
+.cover-bg-tema {
+  background:
+    radial-gradient(120% 80% at 20% 0%, rgb(255 255 255 / 0.16), transparent 55%),
+    linear-gradient(150deg, color-mix(in srgb, var(--accent) 86%, #2a1016), color-mix(in srgb, var(--accent) 56%, #2a1016));
+  --cover-ink: #fff8ee;
+  --cover-stitch: rgb(255 248 238 / 0.4);
+}
+.cover-bg-carta {
+  background:
+    radial-gradient(circle at 20% 30%, rgb(176 138 79 / 0.1) 0, transparent 42%),
+    radial-gradient(circle at 80% 75%, rgb(176 138 79 / 0.09) 0, transparent 45%), #fbf6ec;
+}
+.cover-bg-kraft {
+  background:
+    repeating-linear-gradient(92deg, rgb(90 60 30 / 0.05) 0 2px, transparent 2px 7px),
+    linear-gradient(160deg, #d2b48a, #b9966a);
+  --cover-ink: #3f2a1e;
+  --cover-stitch: rgb(63 42 30 / 0.35);
+}
+.cover-bg-cipria {
+  background: radial-gradient(110% 70% at 80% 0%, #fdeef1, transparent 60%), linear-gradient(160deg, #f8dce3, #f0c4d0);
+  --cover-ink: #6a2334;
+  --cover-stitch: rgb(106 35 52 / 0.3);
+}
+.cover-bg-notte {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 32% 62%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 58% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 74% 44%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 86% 78%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 22% 86%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 46% 34%, #fff 50%, transparent 51%),
+    linear-gradient(165deg, #1c2242, #3a2248);
+  --cover-ink: #f6ead8;
+  --cover-stitch: rgb(246 234 216 / 0.35);
+}
+
+.cover-canvas {
+  position: relative;
+  height: min(100cqh, 133.333cqw);
+  aspect-ratio: 3 / 4;
+  container-type: size;
+  color: var(--cover-ink);
+}
+/* Cucitura lungo il bordo. */
+.cover-canvas::before {
+  content: '';
+  position: absolute;
+  inset: 3.5cqw;
+  border: 0.45cqw dashed var(--cover-stitch);
+  border-radius: 2.5cqw;
+  pointer-events: none;
+}
+
+/* --u vale l'1% della larghezza dell'elemento: tutto ciò che contiene si misura in --u e scala con lui. */
+.cover-item {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  width: calc(var(--w) * 1%);
+  transform: translate(-50%, -50%) rotate(calc(var(--rot) * 1deg));
+  --u: calc(var(--w) * 0.01cqw);
+}
+.cover-item.is-editable { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.cover-item.is-editable:active { cursor: grabbing; }
+.cover-item.is-selected { outline: 2px dashed #fff; outline-offset: 5px; box-shadow: 0 0 0 7px rgb(0 0 0 / 0.28); border-radius: 4px; }
+.cover-item.is-editable > * { pointer-events: none; }
+
+.cover-title { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 2.5); text-align: center; }
+.cover-title-label { font-size: calc(var(--u) * 4.6); font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.8; }
+.cover-title-name { font-size: calc(var(--u) * 14.5); font-weight: 600; font-style: italic; line-height: 1.05; text-wrap: balance; overflow-wrap: anywhere; }
+/* Leggibile anche quando finisce sopra una foto. */
+.cover-title > span { text-shadow: 0 1px 10px rgb(20 5 10 / 0.35); }
+.cover-bg-carta .cover-title > span, .cover-bg-kraft .cover-title > span, .cover-bg-cipria .cover-title > span { text-shadow: 0 0 8px rgb(255 250 243 / 0.9); }
+.cover-title-date { font-family: var(--font-hand); font-size: calc(var(--u) * 7.2); opacity: 0.9; }
+
+.cover-photo img, .cover-video { display: block; width: 100%; border-radius: calc(var(--u) * 2); }
+.cover-photo, .cover-video { box-shadow: 0 calc(var(--u) * 3) calc(var(--u) * 8) calc(var(--u) * -3) rgb(20 5 10 / 0.6); }
+.cover-photo.is-polaroid { padding: calc(var(--u) * 4.5) calc(var(--u) * 4.5) calc(var(--u) * 15); background: #fffdf8; border-radius: calc(var(--u) * 1.2); }
+.cover-photo.is-polaroid img { border-radius: calc(var(--u) * 0.6); }
+.cover-video { background: #000; border: calc(var(--u) * 2) solid #fffdf8; }
+
+.cover-note {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: calc(var(--u) * 9);
+  font-family: var(--font-hand);
+  font-size: calc(var(--u) * 15);
+  line-height: 1.1;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+  color: #43302a;
+  box-shadow: 0 calc(var(--u) * 5) calc(var(--u) * 9) calc(var(--u) * -4) rgb(20 5 10 / 0.55);
+  border-bottom-right-radius: calc(var(--u) * 16) calc(var(--u) * 3);
+}
+.cover-note[data-color='giallo'] { background: linear-gradient(170deg, #fdf3b0, #f9e37c); }
+.cover-note[data-color='rosa'] { background: linear-gradient(170deg, #fddbe5, #f8b9cb); }
+.cover-note[data-color='azzurro'] { background: linear-gradient(170deg, #d9edfb, #b5d8f1); }
+.cover-note[data-color='verde'] { background: linear-gradient(170deg, #def3d0, #bfe3a9); }
+
+.cover-text { margin: 0; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.12; }
+.cover-text[data-font='mano'] { font-family: var(--font-hand); font-size: calc(var(--u) * 12); }
+.cover-text[data-font='stampa'] { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: calc(var(--u) * 9.5); }
+.cover-text[data-color='inchiostro'] { color: #4b2e35; }
+.cover-text[data-color='chiaro'] { color: #fff8ee; text-shadow: 0 1px 6px rgb(20 5 10 / 0.35); }
+.cover-text[data-color='accento'] { color: var(--accent); }
+.cover-text[data-color='oro'] { color: #c9a25e; }
+
+.cover-sticker { display: block; width: 100%; text-align: center; font-size: calc(var(--u) * 78); line-height: 1.15; }
+.cover-sticker svg { display: block; width: 100%; height: auto; }
+
+/* "Personalizza", in basso sulla copertina dentro il libro. */
+.cover-edit {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.9rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4b2e35;
+  background: rgb(255 250 243 / 0.88);
+  box-shadow: 0 4px 14px -6px rgb(20 5 10 / 0.6);
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+.cover-edit:hover { background: #fffaf3; transform: translateY(-1px); }

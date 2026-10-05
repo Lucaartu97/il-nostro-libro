@@ -14,6 +14,8 @@ const pg = new EmbeddedPostgres({
   user: 'libro',
   password: 'libro',
   persistent: true,
+  // Come in produzione: UTF-8 (su Windows initdb userebbe la codifica di sistema, senza emoji).
+  initdbFlags: ['--encoding=UTF8', '--locale=C'],
   onLog: () => {},
   onError: (err) => console.error(err),
 });

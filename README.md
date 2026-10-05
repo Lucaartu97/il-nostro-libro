@@ -8,8 +8,10 @@ con una chiave condivisa, soltanto vostra.
 
 ## Cosa sa fare
 
-- **Libro sfogliabile** — doppia pagina su schermi larghi, pagina singola su telefono; il foglio gira in 3D
-  (clic, frecce della tastiera o swipe). Frontespizio, indice con numeri di pagina, pagine numerate.
+- **Libro sfogliabile** — parte chiuso sulla copertina e si apre in 3D; doppia pagina su schermi larghi, pagina
+  singola su telefono (clic, frecce della tastiera o swipe). Frontespizio, indice con numeri di pagina, pagine numerate.
+- **Copertina personalizzabile** — una tela libera su cui appoggiare foto (anche più insieme, a collage), video,
+  post-it, messaggi, sticker ed emoji: si trascinano, si ingrandiscono, si inclinano, si sovrappongono. Cinque sfondi.
 - **Editor a piena pagina** — data, titolo, etichetta (Giornata / Pensiero / Difficoltà / Momento bello / Altro),
   firma di chi scrive, testo con grassetto, corsivo, elenchi e citazioni.
 - **Multimedia** — trascina foto (JPG, PNG, WEBP), GIF, video MP4 e canzoni MP3 fino a 10 MB ciascuno; incolla
@@ -30,12 +32,12 @@ con una chiave condivisa, soltanto vostra.
 
 ```
 client/               frontend React
-  src/components/     libro sfogliabile (book/), editor, media, decorazioni disegnate a mano
+  src/components/     libro sfogliabile (book/), copertina (cover/), editor, media, decorazioni disegnate a mano
   src/context/        sessione (libro, chi scrive, notte) e tempo reale (socket, pagine, notifiche)
-  src/pages/          benvenuto, creazione, accesso, libro, editor, ricordi, impostazioni, stampa
+  src/pages/          benvenuto, creazione, accesso, libro, editor, copertina, ricordi, impostazioni, stampa
 server/               API Express + Socket.io
   migrations/         schema SQL, applicato automaticamente all'avvio
-  src/routes/         libri e accesso, pagine, media, esportazione
+  src/routes/         libri e accesso, copertina, pagine, media, esportazione
   src/realtime/       presenza, "sta scrivendo", lock di modifica
   test/               test di integrazione (vitest + supertest) su un PostgreSQL vero
 scripts/dev.mjs       avvio di sviluppo (database + server + client)
@@ -51,7 +53,7 @@ npm run setup     # installa le dipendenze di server e client
 npm run dev       # PostgreSQL integrato + API (porta 3000) + frontend (http://localhost:5173)
 ```
 
-`npm run dev` avvia da solo un PostgreSQL locale (pacchetto `embedded-postgres`, dati in
+`npm run dev` avvia da solo un PostgreSQL locale (pacchetto `embedded-postgres`, UTF-8, dati in
 `~/.il-nostro-libro/pgdata`): non serve installare nulla. Le migrazioni partono all'avvio del server.
 
 Se preferisci Docker:
@@ -105,6 +107,7 @@ Tranne le prime due, richiedono il cookie di sessione.
 | `POST /auth/login` | apre il libro con la chiave: `{ code }` |
 | `POST /auth/logout` | chiude la sessione |
 | `GET /book` · `PATCH /book` | legge o aggiorna titolo, nomi, data di inizio, tema (`rosa`, `bordeaux`, `oro`, `pesca`) |
+| `PUT /book/cover` | salva la copertina: `{ background, items: [...] }` (vedi sotto) |
 | `GET /entries` | pagine in ordine di libro. Filtri: `q` (testo), `tag`, `favorite=1`, `order=asc\|desc` |
 | `GET /entries/:id` | una pagina |
 | `POST /entries` · `PUT /entries/:id` | crea o salva: `{ date, title, tag, contentHtml, author, isFavorite, media: [{ id, caption }] }` |
@@ -121,6 +124,24 @@ Codici particolari: `401` sessione mancante, `409` chiave già usata, `413` file
 `415` tipo di file non ammesso, `423` pagina in modifica da parte del partner (`lockedBy`).
 L'HTML delle pagine viene sempre ripulito sul server (solo `p`, `strong`, `em`, elenchi, citazioni).
 
+### La copertina
+
+`book.cover` è `null` finché non viene personalizzata (il client mostra quella predefinita). Altrimenti contiene lo
+sfondo (`tema`, `carta`, `kraft`, `cipria`, `notte`) e fino a 40 elementi. Ogni elemento ha `id`, centro `x`/`y` e
+larghezza `w` in percentuale della copertina (proporzione fissa 3:4), rotazione `rot` in gradi, ordine `z`, e un `type`:
+
+| `type` | Campi propri |
+| --- | --- |
+| `title` | nessuno: mostra titolo del libro e data di inizio |
+| `photo` | `mediaId` (foto o GIF caricata con `POST /media`), `frame`: `polaroid` o `nessuna` |
+| `video` | `mediaId` (video MP4 caricato) |
+| `note` | `text`, `color`: `giallo`, `rosa`, `azzurro`, `verde` |
+| `text` | `text`, `font`: `mano` o `stampa`, `color`: `inchiostro`, `chiaro`, `accento`, `oro` |
+| `sticker` | `sticker`: `cuore`, `stella`, `fiore`, `rametto` oppure un'emoji |
+
+I file usati in copertina sono marcati `media.on_cover`: non vengono ripuliti come caricamenti orfani, non possono
+finire dentro una pagina e vengono eliminati quando escono dalla copertina.
+
 ### Eventi in tempo reale (Socket.io)
 
 La connessione usa lo stesso cookie di sessione, più `auth: { author, clientId }`.
@@ -135,8 +156,8 @@ La connessione usa lo stesso cookie di sessione, più `auth: { author, clientId 
 
 ## Database
 
-Tre tabelle (vedi [`server/migrations/001_init.sql`](server/migrations/001_init.sql)):
-`books` (il libro e l'impronta della chiave), `entries` (le pagine, con una copia solo testo per la ricerca) e
+Tre tabelle (vedi [`server/migrations/`](server/migrations)):
+`books` (il libro, l'impronta della chiave e la copertina in `jsonb`), `entries` (le pagine, con una copia solo testo per la ricerca) e
 `media` (file caricati e link esterni, ordinati dentro la pagina).
 
 Per cambiare lo schema aggiungi un file `server/migrations/00N_nome.sql`: all'avvio il server applica in ordine,

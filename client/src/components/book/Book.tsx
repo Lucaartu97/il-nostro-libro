@@ -1,10 +1,11 @@
 import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { type ReactNode, type TouchEvent, useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { type ReactNode, type TouchEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { isTyping, useIsWide } from './useIsWide';
 
 interface BookProps {
   pageCount: number;
-  /** Indice della pagina che vogliamo vedere. */
+  /** Indice della pagina che vogliamo vedere (0 = copertina). */
   page: number;
   onPageChange: (page: number) => void;
   /** Contenuto di una pagina (null per gli indici fuori dal libro). */
@@ -12,40 +13,26 @@ interface BookProps {
 }
 
 const EASE = [0.645, 0.045, 0.355, 1] as const;
-const WIDE = '(min-width: 900px)';
-
-function useIsWide(): boolean {
-  return useSyncExternalStore(
-    (notify) => {
-      const query = window.matchMedia(WIDE);
-      query.addEventListener('change', notify);
-      return () => query.removeEventListener('change', notify);
-    },
-    () => window.matchMedia(WIDE).matches,
-  );
-}
-
-const isTyping = (el: EventTarget | null) =>
-  el instanceof HTMLElement && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
 
 /**
- * Il libro sfogliabile. Su schermi larghi mostra due pagine affiancate, su telefono una sola.
- * Una "vista" è ciò che sta fermo sul tavolo: una facciata doppia oppure una pagina singola.
+ * Il libro sfogliabile. Una "vista" è ciò che sta fermo sul tavolo.
+ * Su telefono è una pagina sola. Su schermi larghi la vista 0 è il libro chiuso (solo la copertina,
+ * a destra); poi ogni vista v è una facciata con le pagine 2v-1 a sinistra e 2v a destra.
  */
 export function Book({ pageCount, page, onPageChange, renderPage }: BookProps) {
   const wide = useIsWide();
   const reducedMotion = useReducedMotion();
-  const step = wide ? 2 : 1;
-  const view = Math.floor(page / step);
-  const lastView = Math.floor((pageCount - 1) / step);
+  const viewOf = (p: number) => (wide ? Math.ceil(p / 2) : p);
+  const view = viewOf(page);
+  const lastView = viewOf(pageCount - 1);
 
   const [shown, setShown] = useState(view);
   const [flipTo, setFlipTo] = useState<number | null>(null);
 
   // Cambiando formato (telefono ruotato, finestra ridimensionata) si riparte da fermi.
-  const lastStep = useRef(step);
-  if (lastStep.current !== step) {
-    lastStep.current = step;
+  const lastWide = useRef(wide);
+  if (lastWide.current !== wide) {
+    lastWide.current = wide;
     setShown(view);
     setFlipTo(null);
   }
@@ -61,14 +48,15 @@ export function Book({ pageCount, page, onPageChange, renderPage }: BookProps) {
     setFlipTo(null);
   };
 
-  const turn = useCallback(
-    (delta: number) => {
+  const goToView = useCallback(
+    (target: number) => {
       if (flipTo !== null) return;
-      const next = Math.min(lastView, Math.max(0, view + delta));
-      if (next !== view) onPageChange(next * step);
+      const next = Math.min(lastView, Math.max(0, target));
+      if (next !== view) onPageChange(wide ? Math.max(0, next * 2 - 1) : next);
     },
-    [flipTo, lastView, view, step, onPageChange],
+    [flipTo, lastView, view, wide, onPageChange],
   );
+  const turn = useCallback((delta: number) => goToView(view + delta), [goToView, view]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -95,16 +83,19 @@ export function Book({ pageCount, page, onPageChange, renderPage }: BookProps) {
   const flipping = flipTo !== null;
   const to = flipTo ?? shown;
   const forward = to > shown;
-  const face = (index: number, side: 'left' | 'right' | 'single', back = false) => (
-    <div className={`book-page is-${side}${back ? ' is-back' : ''}`}>{renderPage(index)}</div>
-  );
+  const face = (index: number, side: 'left' | 'right' | 'single', back = false) =>
+    index < 0 ? null : (
+      <div className={`book-page is-${side}${index === 0 ? ' is-cover' : ''}${back ? ' is-back' : ''}`}>
+        {renderPage(index)}
+      </div>
+    );
 
   let content: ReactNode;
   if (wide) {
     // Sotto restano la pagina sinistra di partenza e la destra di arrivo (o viceversa);
     // il foglio che gira porta le altre due, una per faccia.
-    const left = flipping && !forward ? to * 2 : shown * 2;
-    const right = flipping && forward ? to * 2 + 1 : shown * 2 + 1;
+    const left = (flipping && !forward ? to : shown) * 2 - 1;
+    const right = (flipping && forward ? to : shown) * 2;
     content = (
       <>
         {face(left, 'left')}
@@ -119,8 +110,8 @@ export function Book({ pageCount, page, onPageChange, renderPage }: BookProps) {
             transition={{ duration: 0.95, ease: EASE }}
             onAnimationComplete={finishFlip}
           >
-            {forward ? face(shown * 2 + 1, 'right') : face(shown * 2, 'left')}
-            {forward ? face(to * 2, 'left', true) : face(to * 2 + 1, 'right', true)}
+            {forward ? face(shown * 2, 'right') : face(shown * 2 - 1, 'left')}
+            {forward ? face(to * 2 - 1, 'left', true) : face(to * 2, 'right', true)}
           </motion.div>
         )}
       </>
@@ -147,17 +138,32 @@ export function Book({ pageCount, page, onPageChange, renderPage }: BookProps) {
     );
   }
 
-  const first = to * step + 1;
-  const label = wide
-    ? `pagine ${first}–${Math.min(first + 1, pageCount)} di ${pageCount}`
-    : `pagina ${first} di ${pageCount}`;
+  // La copertina non si conta: le pagine di carta vanno da 1 a "total".
+  const total = pageCount - 1;
+  const label =
+    to === 0
+      ? 'copertina'
+      : wide
+        ? `pagine ${to * 2 - 1}–${Math.min(to * 2, total)} di ${total}`
+        : `pagina ${to} di ${total}`;
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
       <div className="book-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <div className={`book ${wide ? 'is-wide' : 'is-narrow'}`}>{content}</div>
+        {/* A libro chiuso la copertina scivola al centro; aprendolo torna al suo posto, a destra. */}
+        <motion.div
+          className={`book ${wide ? 'is-wide' : 'is-narrow'}`}
+          initial={false}
+          animate={{ x: wide && to === 0 ? '-25%' : '0%' }}
+          transition={{ duration: reducedMotion ? 0 : 0.95, ease: EASE }}
+        >
+          {content}
+        </motion.div>
       </div>
-      <nav className="no-print flex items-center gap-2" aria-label="Sfoglia il libro">
+      <nav className="no-print flex items-center gap-1" aria-label="Sfoglia il libro">
+        <button type="button" className="icon-btn" onClick={() => goToView(0)} disabled={to === 0} aria-label="Vai alla copertina" title="Copertina">
+          <ChevronsLeft size={20} />
+        </button>
         <button type="button" className="icon-btn" onClick={() => turn(-1)} disabled={to === 0} aria-label="Pagina precedente">
           <ChevronLeft />
         </button>
@@ -166,6 +172,9 @@ export function Book({ pageCount, page, onPageChange, renderPage }: BookProps) {
         </span>
         <button type="button" className="icon-btn" onClick={() => turn(1)} disabled={to >= lastView} aria-label="Pagina successiva">
           <ChevronRight />
+        </button>
+        <button type="button" className="icon-btn" onClick={() => goToView(lastView)} disabled={to >= lastView} aria-label="Vai all’ultima pagina" title="Ultima pagina">
+          <ChevronsRight size={20} />
         </button>
       </nav>
     </div>

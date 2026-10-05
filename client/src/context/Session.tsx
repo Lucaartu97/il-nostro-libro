@@ -23,8 +23,8 @@ const SessionContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [book, setBook] = useState<Book | null | undefined>(undefined);
-  // Ricordiamo il "posto" nella coppia, non il nome: così regge anche se un nome cambia.
-  const [slot, setSlot] = useState<Slot | null>(null);
+  // Scelta fatta in questa sessione; quella salvata sul dispositivo si legge più sotto.
+  const [picked, setPicked] = useState<{ bookId: string; slot: Slot } | null>(null);
   const [night, setNight] = useState(savedNight.get);
 
   useEffect(() => {
@@ -34,11 +34,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  // Ricordiamo il "posto" nella coppia, non il nome: così regge anche se un nome cambia.
+  // Letto durante il render: all'apertura non c'è mai un istante in cui chi scrive sembra da scegliere.
   const bookId = book?.id;
-  useEffect(() => {
-    const saved = bookId ? savedAuthor.get(bookId) : null;
-    setSlot(saved === 'one' || saved === 'two' ? saved : null);
-  }, [bookId]);
+  const saved = bookId ? savedAuthor.get(bookId) : null;
+  const slot: Slot | null =
+    picked && picked.bookId === bookId ? picked.slot : saved === 'one' || saved === 'two' ? saved : null;
 
   useEffect(() => {
     const root = document.documentElement;
@@ -53,7 +54,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (!book) return;
       const next: Slot = name === book.partnerTwo ? 'two' : 'one';
       savedAuthor.set(book.id, next);
-      setSlot(next);
+      setPicked({ bookId: book.id, slot: next });
     },
     [book],
   );

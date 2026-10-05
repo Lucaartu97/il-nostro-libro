@@ -38,6 +38,7 @@ export default async function setup() {
     user: 'libro',
     password: 'libro',
     persistent: false,
+    initdbFlags: ['--encoding=UTF8', '--locale=C'],
     onLog: () => {},
     onError: () => {},
   });

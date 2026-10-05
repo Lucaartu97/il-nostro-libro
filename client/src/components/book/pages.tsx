@@ -28,7 +28,8 @@ export function TypingNote({ children, className = '' }: { children: ReactNode; 
   );
 }
 
-export function CoverPage({ book }: { book: Book }) {
+/** Il frontespizio: la prima pagina di carta, subito dopo la copertina. */
+export function TitlePage({ book }: { book: Book }) {
   return (
     <PageShell>
       <div className="flex min-h-full flex-col items-center justify-center gap-4 py-4 text-center">

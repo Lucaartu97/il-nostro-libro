@@ -27,10 +27,16 @@ exportRouter.get('/export/json', async (req, res) => {
   res.attachment(`il-nostro-libro-${stamp()}.json`).json(data);
 });
 
-/** Copia completa: libro.json + tutti i file caricati, in uno ZIP. */
+/** Copia completa: libro.json + tutti i file caricati (pagine e copertina), in uno ZIP. */
 exportRouter.get('/export/zip', async (req, res) => {
   const { rows, data } = await snapshot(req.bookId);
   const fileNames = rows.flatMap((entry) => entry.media.map((m) => m.file_name)).filter((f) => f !== null);
+
+  const coverFiles = await query<{ file_name: string }>(
+    'SELECT file_name FROM media WHERE book_id = $1 AND on_cover AND file_name IS NOT NULL',
+    [req.bookId],
+  );
+  fileNames.push(...coverFiles.map((r) => r.file_name));
 
   res.attachment(`il-nostro-libro-${stamp()}.zip`);
   // Foto e video sono già compressi: basta impacchettarli.
