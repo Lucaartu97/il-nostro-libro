@@ -1,0 +1,155 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-serif: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-hand: 'Caveat Variable', 'Caveat', 'Segoe Script', cursive;
+  --color-paper: var(--paper);
+  --color-paper-edge: var(--paper-edge);
+  --color-desk: var(--desk);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-gold: var(--gold);
+  --color-line: var(--line);
+  --animate-heartbeat: heartbeat 0.9s ease-in-out;
+  --animate-float: float 8s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  20% { transform: scale(1.35); }
+  40% { transform: scale(0.95); }
+  60% { transform: scale(1.2); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-10px) rotate(calc(var(--tilt, 0deg) + 3deg)); }
+}
+
+@layer base {
+  /* Carta color crema, inchiostro caldo: di giorno. */
+  :root {
+    color-scheme: light;
+    --paper: #fbf6ec;
+    --paper-edge: #f1e6d3;
+    --desk: #efe0d6;
+    --ink: #4b2e35;
+    --ink-soft: #8a6b6d;
+    --gold: #b08a4f;
+    --line: rgb(75 46 53 / 0.16);
+    --on-accent: #fffaf3;
+    --shadow: 0 18px 50px -22px rgb(75 46 53 / 0.45);
+  }
+  :root[data-theme='rosa'] { --accent: #c4728a; --accent-deep: #9b475f; --accent-soft: #f6dde3; }
+  :root[data-theme='bordeaux'] { --accent: #8e3b4d; --accent-deep: #6a2334; --accent-soft: #f0d5d9; }
+  :root[data-theme='oro'] { --accent: #b5873a; --accent-deep: #876121; --accent-soft: #f4e6c6; }
+  :root[data-theme='pesca'] { --accent: #d68463; --accent-deep: #a9583a; --accent-soft: #f9dfd1; }
+
+  /* A lume di candela: per leggere la sera. */
+  :root.dark {
+    color-scheme: dark;
+    --paper: #2d2227;
+    --paper-edge: #251b20;
+    --desk: #181012;
+    --ink: #f1e3d3;
+    --ink-soft: #b9a297;
+    --gold: #d4b27a;
+    --line: rgb(241 227 211 / 0.16);
+    --on-accent: #2a1c20;
+    --shadow: 0 18px 50px -20px rgb(0 0 0 / 0.8);
+  }
+  :root.dark[data-theme='rosa'] { --accent: #e09aae; --accent-deep: #f1bccb; --accent-soft: #4b2c37; }
+  :root.dark[data-theme='bordeaux'] { --accent: #d98194; --accent-deep: #edaab8; --accent-soft: #4a2530; }
+  :root.dark[data-theme='oro'] { --accent: #d9b064; --accent-deep: #ecd096; --accent-soft: #47381c; }
+  :root.dark[data-theme='pesca'] { --accent: #e9a183; --accent-deep: #f5c3ad; --accent-soft: #4c2e22; }
+
+  html {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    color: var(--ink);
+    font-size: 1.12rem;
+    font-weight: 500;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(900px 520px at 8% -8%, var(--accent-soft), transparent 62%),
+      radial-gradient(800px 520px at 105% 108%, var(--accent-soft), transparent 58%), var(--desk);
+    background-attachment: fixed;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+  button, a, label, [role='button'] { -webkit-tap-highlight-color: transparent; }
+  button:not(:disabled), [role='button'] { cursor: pointer; }
+  h1, h2, h3 { text-wrap: balance; }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 46px; padding: 0.55rem 1.4rem; border-radius: 999px;
+    font-weight: 600; font-size: 1.08rem; line-height: 1.2; text-align: center;
+    transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: var(--on-accent); box-shadow: 0 10px 22px -12px var(--accent-deep); }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-deep); }
+  .btn-soft { background: var(--accent-soft); color: var(--accent-deep); }
+  .btn-soft:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .btn-ghost { color: var(--ink-soft); }
+  .btn-ghost:hover:not(:disabled) { background: var(--line); color: var(--ink); }
+
+  .icon-btn {
+    display: inline-grid; place-items: center; width: 44px; height: 44px; flex: none;
+    border-radius: 999px; color: var(--ink-soft);
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+  .icon-btn:hover { background: var(--line); color: var(--ink); }
+  .icon-btn:active { transform: scale(0.92); }
+
+  .label {
+    display: block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .field {
+    width: 100%; padding: 0.45rem 0.1rem; background: transparent; color: inherit; font: inherit;
+    border: 0; border-bottom: 1.5px solid var(--line); border-radius: 0;
+    transition: border-color 0.2s ease;
+  }
+  .field::placeholder { color: var(--ink-soft); opacity: 0.65; font-style: italic; }
+  .field:focus { outline: none; border-bottom-color: var(--accent); }
+
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 1.4rem;
+    box-shadow: var(--shadow);
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.4rem; min-height: 38px; padding: 0.3rem 0.95rem;
+    border-radius: 999px; border: 1.5px solid var(--line); color: var(--ink-soft);
+    font-size: 1rem; font-weight: 600; white-space: nowrap;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip[aria-pressed='true'], .chip[aria-checked='true'] {
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep);
+  }
+  .thin-scroll { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+.icon-btn:disabled { opacity: 0.3; pointer-events: none; }

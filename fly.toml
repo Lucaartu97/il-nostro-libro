@@ -1,0 +1,45 @@
+# Configurazione fly.io — vedi README, sezione "Deploy su fly.io".
+app = 'il-nostro-libro'
+primary_region = 'fra'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  NODE_ENV = 'production'
+  PORT = '3000'
+  UPLOAD_DIR = '/data/uploads'
+  MAX_UPLOAD_MB = '10'
+
+# Volume persistente per foto, video e audio caricati.
+[[mounts]]
+  source = 'libro_data'
+  destination = '/data'
+  initial_size = '1gb'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # La macchina si ferma quando nessuno ha il libro aperto e riparte alla prima visita (un paio di secondi):
+  # per un libro usato da due persone significa pagare solo i minuti di lettura e scrittura.
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+  [http_service.concurrency]
+    type = 'connections'
+    soft_limit = 150
+    hard_limit = 200
+
+  [[http_service.checks]]
+    method = 'GET'
+    path = '/api/health'
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '30s'
+
+# Una sola macchina: presenza e lock di modifica vivono in memoria (vedi README, "Scalare").
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'

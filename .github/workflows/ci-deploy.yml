@@ -1,0 +1,66 @@
+name: Test e deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: libro
+          POSTGRES_PASSWORD: libro
+          POSTGRES_DB: libro_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U libro" --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+      - name: Server — dipendenze, tipi, test
+        working-directory: server
+        env:
+          TEST_DATABASE_URL: postgres://libro:libro@localhost:5432/libro_test
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+      - name: Client — dipendenze e build
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+
+  deploy:
+    name: Deploy su fly.io
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - name: Token mancante
+        if: env.FLY_API_TOKEN == ''
+        run: echo "::notice::FLY_API_TOKEN non impostato, deploy saltato (vedi README, Deploy automatico da GitHub)."
+      - uses: actions/checkout@v4
+        if: env.FLY_API_TOKEN != ''
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: env.FLY_API_TOKEN != ''
+      - name: fly deploy
+        if: env.FLY_API_TOKEN != ''
+        run: flyctl deploy --remote-only --ha=false

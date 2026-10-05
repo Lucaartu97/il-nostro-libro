@@ -1,0 +1,47 @@
+/* Vista di stampa: il libro diventa un PDF pulito, una pagina del libro per foglio. */
+.print-entry {
+  break-inside: avoid-page;
+  page-break-inside: avoid;
+}
+
+@media print {
+  @page {
+    size: A5;
+    margin: 16mm 14mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #2a1a1e !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  .print-break {
+    break-after: page;
+    page-break-after: always;
+  }
+  .print-entry img {
+    max-height: 90mm;
+  }
+}
+
+/* Anche con la modalità notte attiva, sulla carta si stampa con i colori del giorno. */
+@media print {
+  :root.dark {
+    --paper: #fff;
+    --ink: #3b262b;
+    --ink-soft: #7a6163;
+    --gold: #b08a4f;
+    --line: rgb(75 46 53 / 0.16);
+    --accent: #b0607a;
+    --accent-deep: #8a3f56;
+    --accent-soft: #f6dde3;
+  }
+}

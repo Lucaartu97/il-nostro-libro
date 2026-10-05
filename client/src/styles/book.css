@@ -1,0 +1,196 @@
+/* Il libro: due pagine affiancate (o una sola su telefono) e il foglio che gira in 3D. */
+.book-stage {
+  perspective: 2400px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.book {
+  position: relative;
+  width: 100%;
+  height: min(calc(100dvh - 205px), 760px);
+  min-height: 420px;
+  transform-style: preserve-3d;
+}
+.book.is-wide {
+  width: min(1120px, 100%);
+  height: min(calc(100dvh - 190px), 740px);
+  filter: drop-shadow(0 26px 30px rgb(40 15 20 / 0.28));
+}
+.book.is-narrow {
+  filter: drop-shadow(0 18px 22px rgb(40 15 20 / 0.25));
+}
+
+.book-page {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+/* Grana leggera della carta. */
+.book-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgb(176 138 79 / 0.07) 0, transparent 40%),
+    radial-gradient(circle at 80% 75%, rgb(176 138 79 / 0.06) 0, transparent 45%);
+}
+/* Ombra della rilegatura. */
+.book-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.book-page.is-left {
+  left: 0;
+  width: 50%;
+  border-radius: 14px 3px 3px 14px;
+  box-shadow: inset 4px 0 0 var(--paper-edge), inset 5px 0 0 var(--line);
+}
+.book-page.is-left::after {
+  background: linear-gradient(to left, rgb(40 15 20 / 0.18), rgb(40 15 20 / 0.04) 7%, transparent 16%);
+}
+.book-page.is-right {
+  left: 50%;
+  width: 50%;
+  border-radius: 3px 14px 14px 3px;
+  box-shadow: inset -4px 0 0 var(--paper-edge), inset -5px 0 0 var(--line);
+}
+.book-page.is-right::after {
+  background: linear-gradient(to right, rgb(40 15 20 / 0.18), rgb(40 15 20 / 0.04) 7%, transparent 16%);
+}
+.book-page.is-single {
+  left: 0;
+  width: 100%;
+  border-radius: 5px 14px 14px 5px;
+  box-shadow: inset -4px 0 0 var(--paper-edge), inset -5px 0 0 var(--line);
+}
+.book-page.is-single::after {
+  background: linear-gradient(to right, rgb(40 15 20 / 0.16), transparent 9%);
+}
+
+/* Il foglio che gira: due facce, una per lato. */
+.book-leaf {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  z-index: 5;
+}
+.book-leaf .book-page {
+  left: 0;
+  width: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.book-leaf .is-back {
+  transform: rotateY(180deg);
+}
+
+.page-scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  padding: clamp(1.4rem, 4vw, 2.6rem) clamp(1.3rem, 4vw, 2.8rem) 3.2rem;
+  z-index: 1;
+}
+.page-number {
+  position: absolute;
+  bottom: 0.7rem;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+.page-fade {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 3.2rem;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--paper) 45%, transparent);
+}
+
+/* Testo scritto a mano: pagine del libro ed editor. */
+.prose-hand {
+  font-family: var(--font-hand);
+  font-size: 1.55rem;
+  font-weight: 500;
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+}
+.prose-hand p { margin: 0 0 0.55em; }
+.prose-hand p:last-child { margin-bottom: 0; }
+.prose-hand strong { font-weight: 700; }
+.prose-hand ul { list-style: none; padding-left: 1.2em; margin: 0 0 0.55em; }
+.prose-hand ul > li { position: relative; }
+.prose-hand ul > li::before {
+  content: '♥';
+  position: absolute;
+  left: -1.1em;
+  top: 0.32em;
+  font-size: 0.55em;
+  color: var(--accent);
+  font-family: var(--font-serif);
+}
+.prose-hand ol { list-style: decimal; padding-left: 1.3em; margin: 0 0 0.55em; }
+.prose-hand li p { margin: 0; }
+.prose-hand blockquote {
+  margin: 0 0 0.55em;
+  padding-left: 0.8em;
+  border-left: 3px solid var(--accent-soft);
+  color: var(--ink-soft);
+}
+
+.ProseMirror { outline: none; min-height: 13rem; }
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--ink-soft);
+  opacity: 0.6;
+}
+
+/* Fotografie come attaccate alla pagina. */
+.photo-frame {
+  display: block;
+  padding: 0.5rem 0.5rem 0.6rem;
+  background: #fffdf8;
+  border-radius: 4px;
+  box-shadow: 0 6px 16px -8px rgb(40 15 20 / 0.45), 0 0 0 1px rgb(40 15 20 / 0.06);
+}
+.dark .photo-frame { background: #3a2d32; }
+
+.typing-dots span {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 1.5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: typing 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}

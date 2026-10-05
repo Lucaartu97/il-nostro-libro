@@ -1,0 +1,40 @@
+# Sviluppo locale con Docker.
+#   docker compose up db        solo PostgreSQL (poi: npm run dev -- --no-db)
+#   docker compose up --build   tutta la app, come in produzione, su http://localhost:3000
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: libro
+      POSTGRES_PASSWORD: libro
+      POSTGRES_DB: libro
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U libro"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Senza HTTPS (localhost) il cookie di sessione non può essere "Secure".
+      NODE_ENV: development
+      DATABASE_URL: postgres://libro:libro@db:5432/libro
+      APP_SECRET: cambia-questo-segreto-anche-in-locale
+      UPLOAD_DIR: /data/uploads
+      CLIENT_DIST: /app/client/dist
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads:/data/uploads
+
+volumes:
+  pgdata:
+  uploads:
