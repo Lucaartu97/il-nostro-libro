@@ -117,10 +117,18 @@ export function MediaView({ media, eager, index = 0 }: { media: Media; eager?: b
   }
 }
 
-export function MediaList({ items, eager }: { items: Media[]; eager?: boolean }) {
+/** Le canzoni caricate (MP3) aprono la pagina, sopra il testo; tutto il resto la chiude. */
+export function splitMedia(items: Media[]): { songs: Media[]; rest: Media[] } {
+  return {
+    songs: items.filter((m) => m.kind === 'audio'),
+    rest: items.filter((m) => m.kind !== 'audio'),
+  };
+}
+
+export function MediaList({ items, eager, className = 'mt-5' }: { items: Media[]; eager?: boolean; className?: string }) {
   if (!items.length) return null;
   return (
-    <div className="mt-5 flex flex-col gap-5">
+    <div className={`flex flex-col gap-5 ${className}`}>
       {items.map((media, index) => (
         <MediaView key={media.id} media={media} eager={eager} index={index} />
       ))}

@@ -29,7 +29,7 @@ export function BookView() {
   const pages = useMemo(() => buildPages(entries ?? []), [entries]);
   const [page, setPage] = useState<number | null>(null);
 
-  // All’apertura: la pagina chiesta dall’indirizzo (?pagina=…), altrimenti l’ultima scritta.
+  // All’apertura: la pagina chiesta dall’indirizzo (?pagina=…), altrimenti il libro chiuso sulla copertina.
   const wanted = params.get('pagina');
   useEffect(() => {
     if (!entries) return;
@@ -38,8 +38,7 @@ export function BookView() {
       setPage((current) => (index >= 0 ? index : (current ?? 0)));
       setParams({}, { replace: true });
     } else if (page === null) {
-      const latest = [...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
-      setPage(latest ? pageOfEntry(pages, latest.id) : 0);
+      setPage(0);
     }
   }, [entries, pages, wanted, page, setParams]);
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CoverCanvas } from '../components/cover/CoverCanvas';
 import { Divider, HeartDoodle } from '../components/Decor';
 import { mediaLabel } from '../components/MediaThumb';
+import { splitMedia } from '../components/MediaView';
 import { TagBadge } from '../components/TagBadge';
 import { useLive } from '../context/Live';
 import { useOpenBook } from '../context/Session';
@@ -83,8 +84,11 @@ export function PrintView() {
             {entry.isFavorite && <span className="text-gold" aria-label="Momento speciale">★</span>}
           </div>
           <h2 className="mb-2 mt-1 text-3xl font-semibold text-accent-deep">{entry.title}</h2>
-          {entry.contentHtml && <div className="prose-hand" dangerouslySetInnerHTML={{ __html: entry.contentHtml }} />}
-          {entry.media.map((media) => (
+          {splitMedia(entry.media).songs.map((media) => (
+            <PrintMedia key={media.id} media={media} />
+          ))}
+          {entry.contentHtml && <div className="prose-hand mt-2" dangerouslySetInnerHTML={{ __html: entry.contentHtml }} />}
+          {splitMedia(entry.media).rest.map((media) => (
             <PrintMedia key={media.id} media={media} />
           ))}
           <p className="mt-4 text-right font-hand text-2xl text-ink-soft">— {entry.author}</p>

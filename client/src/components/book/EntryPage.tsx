@@ -2,7 +2,7 @@ import { PenLine, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatFullDate } from '../../lib/format';
 import type { Entry } from '../../lib/types';
-import { MediaList } from '../MediaView';
+import { MediaList, splitMedia } from '../MediaView';
 import { TagBadge } from '../TagBadge';
 import { PageShell, TypingNote } from './pages';
 
@@ -15,6 +15,7 @@ interface EntryPageProps {
 }
 
 export function EntryPage({ entry, number, partnerEditing, onToggleFavorite }: EntryPageProps) {
+  const { songs, rest } = splitMedia(entry.media);
   return (
     <PageShell number={number}>
       <article>
@@ -55,8 +56,9 @@ export function EntryPage({ entry, number, partnerEditing, onToggleFavorite }: E
           </TypingNote>
         )}
 
+        <MediaList items={songs} className="mb-4" />
         {entry.contentHtml && <div className="prose-hand" dangerouslySetInnerHTML={{ __html: entry.contentHtml }} />}
-        <MediaList items={entry.media} />
+        <MediaList items={rest} />
         <p className="mt-5 text-right font-hand text-2xl text-ink-soft">— {entry.author}</p>
       </article>
     </PageShell>
