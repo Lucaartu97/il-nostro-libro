@@ -57,10 +57,10 @@ const bookFields = {
 export const createBookSchema = z.object({
   ...bookFields,
   code: z
-    .string('Scegliete un codice.')
+    .string('Scegliete una chiave.')
     .trim()
-    .min(8, 'Il codice deve avere almeno 8 caratteri: è la chiave del vostro libro.')
-    .max(80, 'Il codice può avere al massimo 80 caratteri.'),
+    .min(8, 'La chiave deve avere almeno 8 caratteri.')
+    .max(80, 'La chiave può avere al massimo 80 caratteri.'),
 });
 
 export const updateBookSchema = z.object(bookFields).partial();

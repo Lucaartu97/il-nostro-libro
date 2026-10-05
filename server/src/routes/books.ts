@@ -51,21 +51,21 @@ booksRouter.post('/books', createLimiter, async (req, res) => {
     [data.coupleName, data.partnerOne, data.partnerTwo, data.startDate, data.theme, lookup],
   );
   if (!row) {
-    throw new HttpError(409, 'Questo codice custodisce già un altro libro. Sceglietene uno soltanto vostro.');
+    throw new HttpError(409, 'Questa chiave apre già un altro libro. Sceglietene una soltanto vostra.');
   }
   setSessionCookie(res, row.id);
   res.status(201).json({ book: toBook(row) });
 });
 
 booksRouter.post('/auth/login', loginLimiter, async (req, res) => {
-  const { code } = z.object({ code: z.string('Scrivete il vostro codice.').max(80) }).parse(req.body);
-  if (!normalizeCode(code)) throw new HttpError(400, 'Scrivete il vostro codice.');
+  const { code } = z.object({ code: z.string('Scrivete la vostra chiave.').max(80) }).parse(req.body);
+  if (!normalizeCode(code)) throw new HttpError(400, 'Scrivete la vostra chiave.');
 
   const [row] = await query<BookRow>(`SELECT ${BOOK_COLUMNS} FROM books WHERE code_lookup = $1`, [
     await codeLookup(code),
   ]);
   if (!row) {
-    throw new HttpError(401, 'Nessun libro si apre con questo codice. Controllate di averlo scritto bene.');
+    throw new HttpError(401, 'Nessun libro si apre con questa chiave. Controllate di averla scritta bene.');
   }
   setSessionCookie(res, row.id);
   res.json({ book: toBook(row) });

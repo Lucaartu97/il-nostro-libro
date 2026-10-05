@@ -72,7 +72,7 @@ export function clearSessionCookie(res: Response): void {
 export const requireBook: RequestHandler = (req, _res, next) => {
   const bookId = bookIdFromCookieHeader(req.headers.cookie);
   if (!bookId) {
-    next(new HttpError(401, 'Per aprire il libro serve il vostro codice.'));
+    next(new HttpError(401, 'Per aprire il libro serve la vostra chiave.'));
     return;
   }
   req.bookId = bookId;
